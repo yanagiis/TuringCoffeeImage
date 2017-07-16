@@ -7,7 +7,7 @@ IFS=$'\n\t'
 pacman -Syu --noconfirm vim bash-completion zsh grml-zsh-config sudo avahi nss-mdns wpa_supplicant termite-terminfo
 
 # Update the hostname
-echo rpizw-rover > /etc/hostname
+echo turingcoffee > /etc/hostname
 
 # Configure sudo
 echo '%wheel ALL=(ALL) ALL' >> /etc/sudoers.d/wheel
