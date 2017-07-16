@@ -10,9 +10,8 @@ addons:
     - wget
     - dosfstools
     - zip
-    - p7zip
+    - p7zip-full
 
 script:
 - sudo bash ./create-image
-- xz -z rpizw-rover.img -c > rpizw-rover.img.xz
-- zip rpizw-rover.img.zip rpizw-rover.img
+- xz -z turingcoffee.img -c > turingcoffee.img.xz
