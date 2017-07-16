@@ -61,15 +61,22 @@ mount "${rootdev}" "${mount}"
 mount "${bootdev}" "${mount}/boot"
 
 # Install dietbian to the image
-7z e "${rpi_7z}" -o${mount} 2> >(grep -v "Ignoring unknown extended header keyword")
+7z e "${rpi_7z}" 2> >(grep -v "Ignoring unknown extended header keyword")
+losetup -o $((8192*512)) /dev/loop3 DietPi_v150_RPi-armv6-\(Jessie\).img
+losetup -o $((137216*512)) /dev/loop4 DietPi_v150_RPi-armv6-\(Jessie\).img
+mkdir mnt1 mnt2
+mount /dev/loop3 ./mnt1
+mount /dev/loop4 ./mnt2
+cp -r ./mnt1/* /mnt/boot/
+cp -r ./mnt2/* /mnt/
 
 # Copy our installation script to the mount so it can be run in the chroot
 install -Dm755 "${script}" "${mount}/tmp/${script}"
 
 # Prep the chroot
-#mount -t proc none ${mount}/proc
-#mount -t sysfs none ${mount}/sys
-#mount -o bind /dev ${mount}/dev
+mount -t proc none ${mount}/proc
+mount -t sysfs none ${mount}/sys
+mount -o bind /dev ${mount}/dev
 rm ${mount}/etc/resolv.conf
 cp /etc/resolv.conf ${mount}/etc/resolv.conf
 cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
