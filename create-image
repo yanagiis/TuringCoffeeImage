@@ -13,8 +13,8 @@ fi
 # Some useful constants
 mount="mnt" # Local directory to mount the image (automatically created/delete as needed)
 script="setup" # Local setup script to run inside the image
-rpi_7z="DietPi_RPi-armv6-(Jessie).7z"
-rpi_url="http://dietpi.com/downloads/images/${rpi_7z}"
+rpi_tar="alpine-rpi-3.6.2-armhf.tar.gz"
+rpi_url="http://dl-cdn.alpinelinux.org/alpine/v3.6/releases/armhf/${rpi_tar}"
 
 # Grab the first two arguments, using the defaults if not set
 # This allows running the command as any of
@@ -41,7 +41,7 @@ cleanup() {
 trap cleanup EXIT
 
 # Download archlinux arm only if we have not already done so
-[ ! -f "${rpi_7z}" ] && wget "${rpi_url}"
+[ ! -f "${rpi_tar}" ] && wget "${rpi_url}"
 
 # Create, partition and format the image
 fallocate -l "${size}" "${image}"
@@ -61,25 +61,18 @@ mount "${rootdev}" "${mount}"
 mount "${bootdev}" "${mount}/boot"
 
 # Install dietbian to the image
-7z e "${rpi_7z}" 2> >(grep -v "Ignoring unknown extended header keyword")
-losetup -o $((8192*512)) /dev/loop3 DietPi_v150_RPi-armv6-\(Jessie\).img
-losetup -o $((137216*512)) /dev/loop4 DietPi_v150_RPi-armv6-\(Jessie\).img
-mkdir mnt1 mnt2
-mount /dev/loop3 ./mnt1
-mount /dev/loop4 ./mnt2
-cp -r ./mnt1/* /mnt/boot/
-cp -r ./mnt2/* /mnt/
+tar -xvf "${rpi_tar}" --no-same-owner -C ${mount} 2> >(grep -v "Ignoring unknown extended header keyword")
 
 # Copy our installation script to the mount so it can be run in the chroot
-install -Dm755 "${script}" "${mount}/tmp/${script}"
+# install -Dm755 "${script}" "${mount}/tmp/${script}"
 
 # Prep the chroot
-mount -t proc none ${mount}/proc
-mount -t sysfs none ${mount}/sys
-mount -o bind /dev ${mount}/dev
-rm ${mount}/etc/resolv.conf
-cp /etc/resolv.conf ${mount}/etc/resolv.conf
-cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
+# mount -t proc none ${mount}/proc
+# mount -t sysfs none ${mount}/sys
+# mount -o bind /dev ${mount}/dev
+# rm ${mount}/etc/resolv.conf
+# cp /etc/resolv.conf ${mount}/etc/resolv.conf
+# cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
 
 # Run the setup script inside the chroot
-chroot ${mount}  "/tmp/${script}"
+# chroot ${mount}  "/tmp/${script}"

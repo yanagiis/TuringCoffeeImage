@@ -9,8 +9,6 @@ addons:
     - parted
     - wget
     - dosfstools
-    - zip
-    - p7zip-full
 
 script:
 - sudo bash ./create-image
