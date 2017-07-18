@@ -24,6 +24,7 @@ packages="Package.list"
 # general cleanup
 cleanup() {
     [[ -f "${mount}/tmp/${script}" ]] && rm "${mount}/tmp/${script}"
+    [[ -f "${mount}/tmp/Package.list" ]] && rm "${mount}/tmp/Package.list"
     [[ -f "${mount}/etc/_resolv.conf" ]] && mv "${mount}/etc/_resolv.conf" "${mount}/etc/resolv.conf"
     if [[ -d "${mount}" ]]; then
         umount "${mount}/dev" || true
