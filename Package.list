@@ -265,7 +265,6 @@ ncurses-bin					install
 net-tools					install
 netbase						install
 ntfs-3g						install
-ntp						install
 openssh-client					install
 openssh-server					install
 openssh-sftp-server				install
