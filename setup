@@ -1,4 +1,8 @@
-#!/bin/sh
+#!/bin/bash
+
+set -uo pipefail
+trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+IFS=$'\n\t'
 
 echo "deb http://ftp.yzu.edu.tw/Linux/raspbian/raspbian jessie main contrib non-free rpi" > /etc/apt/sources.list
 
@@ -8,7 +12,7 @@ node_url="https://nodejs.org/dist/v8.1.4/${node_tar}"
 # Install packages
 apt-get update
 apt-get install dselect
-dpkg --set-selections < Package.list
+dpkg --set-selections < /tmp/Package.list
 apt-get -u dselect-upgrade
 
 # Install Nodejs
