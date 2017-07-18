@@ -4,6 +4,7 @@ addons:
   apt:
     packages:
     - qemu
+    - qemu-user-static
     - binfmt-support
     - parted
     - wget
