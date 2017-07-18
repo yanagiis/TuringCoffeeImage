@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo "deb http://ftp.yzu.edu.tw/Linux/raspbian/raspbian jessie main contrib non-free rpi" > /etc/apt/sources.list
+
+node_tar="node-v8.1.4-linux-armv7l.tar.xz"
+node_url="https://nodejs.org/dist/v8.1.4/${node_tar}"
+
+# Install packages
+apt-get update
+apt-get install dselect
+dpkg --set-selections < Package.list
+apt-get -u dselect-upgrade
+
+# Install Nodejs
+[ ! -d "${node_tar}" ] && wget "${node_url}"
+tar -xvf ${node_tar} -C "/" --strip 1
+
+npm install -g yarn
