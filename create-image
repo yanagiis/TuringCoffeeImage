@@ -24,6 +24,7 @@ packages="Package.list"
 # general cleanup
 cleanup() {
     [[ -f "${mount}/tmp/${script}" ]] && rm "${mount}/tmp/${script}"
+    [[ -f "${mount}/etc/_resolv.conf" ]] && mv "${mount}/etc/_resolv.conf" "${mount}/etc/resolv.conf"
     if [[ -d "${mount}" ]]; then
         umount "${mount}/dev" || true
         umount "${mount}/proc" || true
@@ -79,6 +80,7 @@ mount -t sysfs none ${mount}/sys
 mount -o bind /dev ${mount}/dev
 
 rm ${mount}/etc/resolv.conf
+mv ${mount}/etc/resolv.conf ${mount}/etc/_resolv.conf
 cp /etc/resolv.conf ${mount}/etc/resolv.conf
 cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 echo "deb http://ftp.yzu.edu.tw/Linux/raspbian/raspbian jessie main contrib non-free rpi" > /etc/apt/sources.list
 
