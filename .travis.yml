@@ -9,6 +9,7 @@ addons:
     - wget
     - dosfstools
     - p7zip-full
+    - bsdtar
 
 script:
 - wget "http://ftp.debian.org/debian/pool/main/q/qemu/qemu-user-static_2.8+dfsg-6_amd64.deb"
