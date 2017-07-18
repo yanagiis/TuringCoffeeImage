@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 # Setup script error handling see /blog/another-bash-strict-mode/ for details
 set -uo pipefail
 trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
@@ -13,16 +13,12 @@ fi
 # Some useful constants
 mount="mnt" # Local directory to mount the image (automatically created/delete as needed)
 script="setup" # Local setup script to run inside the image
-rpi_tar="alpine-rpi-3.6.2-armhf.tar.gz"
-rpi_url="http://dl-cdn.alpinelinux.org/alpine/v3.6/releases/armhf/${rpi_tar}"
+rpi_name="DietPi_RPi-armv6-(Jessie)"
+rpi_image="DietPi_v150_RPi-armv6-(Jessie).img"
+rpi_tar="${rpi_name}.7z"
+rpi_url="http://dietpi.com/downloads/images/${rpi_tar}"
 
-# Grab the first two arguments, using the defaults if not set
-# This allows running the command as any of
-#   ./create-image                 # to use the defaults
-#   ./create-image 4G              # create a 4 gig image instead of 2 gig
-#   ./create-image 4G myname.img   # create a 4 gig image called myname.img
-size="${1:-2G}"
-image="${2:-turingcoffee.img}"
+packages="Package.list"
 
 # Tasks to run when the shell exits for any reason, unmount the image and 
 # general cleanup
@@ -36,43 +32,44 @@ cleanup() {
         umount "${mount}" || true
         rmdir "${mount}" || true
     fi
-    [ -n "${loopdev}" ] && losetup --detach "${loopdev}" || true
+    losetup -D
 }
 trap cleanup EXIT
 
+[ ! -d "${mount}" ] && mkdir -p "${mount}"
+
 # Download archlinux arm only if we have not already done so
 [ ! -f "${rpi_tar}" ] && wget "${rpi_url}"
-
-# Create, partition and format the image
-fallocate -l "${size}" "${image}"
-loopdev=$(losetup --find --show "${image}")
-parted --script "${loopdev}" mklabel msdos
-parted --script "${loopdev}" mkpart primary fat32 0% 100M
-parted --script "${loopdev}" mkpart primary ext4 100M 100%
-bootdev=$(ls "${loopdev}"*1)
-rootdev=$(ls "${loopdev}"*2)
-mkfs.vfat -F32 ${bootdev}
-mkfs.ext4 -F ${rootdev}
-
-# Mount the image
-[ ! -d "${mount}" ] && mkdir "${mount}"
-mount "${rootdev}" "${mount}"
-[ ! -d "${mount}/boot" ] && mkdir "${mount}/boot"
-mount "${bootdev}" "${mount}/boot"
+img_size=$(stat -c%s ${rpi_image})
+[ ${img_size} -eq 552599552 ] && dd if=/dev/zero bs=1M count=1024 >> ${rpi_image}
 
 # Install dietbian to the image
-tar -xvf "${rpi_tar}" --no-same-owner -C ${mount} 2> >(grep -v "Ignoring unknown extended header keyword")
+[ ! -f "${rpi_image}" ] && 7z -aoa e "${rpi_tar}"
+losetup -o $((8192*512)) /dev/loop0 "${rpi_image}"
+losetup -o $((137216*512)) /dev/loop1 "${rpi_image}"
+
+mount /dev/loop1 "${mount}"
+mount /dev/loop0 "${mount}/boot"
+
+# Enable SPI
+sed -i 's/spi=off/spi=on/g' ${mount}/boot/config.txt
 
 # Copy our installation script to the mount so it can be run in the chroot
-# install -Dm755 "${script}" "${mount}/tmp/${script}"
+install -Dm755 "${script}" "${mount}/tmp/${script}"
+install -Dm755 "${packages}" "${mount}/tmp/${packages}"
 
-# Prep the chroot
-# mount -t proc none ${mount}/proc
-# mount -t sysfs none ${mount}/sys
-# mount -o bind /dev ${mount}/dev
-# rm ${mount}/etc/resolv.conf
-# cp /etc/resolv.conf ${mount}/etc/resolv.conf
-# cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
+# Prepare the chroot
+[ ! -d "${mount}/proc" ] && mkdir -p ${mount}/proc
+[ ! -d "${mount}/sysfs" ] && mkdir -p ${mount}/sysfs
+[ ! -d "${mount}/dev" ] && mkdir -p ${mount}/dev
+
+mount -t proc none ${mount}/proc
+mount -t sysfs none ${mount}/sys
+mount -o bind /dev ${mount}/dev
+
+rm ${mount}/etc/resolv.conf
+cp /etc/resolv.conf ${mount}/etc/resolv.conf
+cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
 
 # Run the setup script inside the chroot
-# chroot ${mount}  "/tmp/${script}"
+chroot ${mount}  "/tmp/${script}"
