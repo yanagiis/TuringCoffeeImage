@@ -11,9 +11,7 @@ node_url="https://nodejs.org/dist/v8.1.4/${node_tar}"
 
 # Install packages
 apt-get update
-apt-get install dselect
-dpkg --set-selections < /tmp/Package.list
-apt-get -u dselect-upgrade
+apt-get install python-dev git zsh build-essential
 
 # Install Nodejs
 [ ! -d "${node_tar}" ] && wget "${node_url}"
