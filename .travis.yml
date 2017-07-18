@@ -13,6 +13,7 @@ addons:
 
 script:
 - wget "http://ftp.debian.org/debian/pool/main/q/qemu/qemu-user-static_2.8+dfsg-6_amd64.deb"
-- ar p qemu-user-static_2.8+dfsg-6_amd64.deb data.tar.xz | bsdtar xf - -C "/"
+- ar p qemu-user-static_2.8+dfsg-6_amd64.deb data.tar.xz | bsdtar xf -
+- sudo cp -rf ./usr/* /usr/
 - sudo bash ./create-image
 - xz -z turingcoffee.img -c > turingcoffee.img.xz
