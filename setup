@@ -16,5 +16,3 @@ apt-get install -y python-dev git zsh build-essential
 # Install Nodejs
 [ ! -d "${node_tar}" ] && wget "${node_url}"
 tar -xvf ${node_tar} -C "/" --strip 1
-
-npm install -g yarn
