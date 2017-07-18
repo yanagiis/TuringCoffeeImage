@@ -79,7 +79,6 @@ mount -t proc none ${mount}/proc
 mount -t sysfs none ${mount}/sys
 mount -o bind /dev ${mount}/dev
 
-rm ${mount}/etc/resolv.conf
 mv ${mount}/etc/resolv.conf ${mount}/etc/_resolv.conf
 cp /etc/resolv.conf ${mount}/etc/resolv.conf
 cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
