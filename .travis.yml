@@ -13,8 +13,15 @@ addons:
     - bsdtar
 
 script:
-- wget "http://ftp.debian.org/debian/pool/main/q/qemu/qemu-user-static_2.8+dfsg-6_amd64.deb"
-- ar p qemu-user-static_2.8+dfsg-6_amd64.deb data.tar.xz | bsdtar xf -
-- sudo cp -rf ./usr/* /usr/
-- sudo bash ./create-image
-- xz -z turingcoffee.img -c > turingcoffee.img.xz
+  - wget "http://ftp.debian.org/debian/pool/main/q/qemu/qemu-user-static_2.8+dfsg-6_amd64.deb"
+  - ar p qemu-user-static_2.8+dfsg-6_amd64.deb data.tar.xz | bsdtar xf -
+  - sudo cp -rf ./usr/* /usr/
+  - sudo bash ./create-image
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: 5fbced7241746640f7cf52a395e25874fec01e1e
+  file: DietPi_v150_RPi-armv6-(Jessie).img.xz
+  on:
+    branch: master

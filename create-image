@@ -31,7 +31,8 @@ cleanup() {
         umount "${mount}" || true
         rmdir "${mount}" || true
     fi
-    losetup -D
+    losetup -d /dev/loop0
+    losetup -d /dev/loop1
 }
 trap cleanup EXIT
 
@@ -53,13 +54,7 @@ losetup -o $((137216*512)) /dev/loop1 "${rpi_image}"
 mount /dev/loop1 "${mount}"
 mount /dev/loop0 "${mount}/boot"
 
-# debug
-df
-
 resize2fs /dev/loop1
-
-# debug
-df
 
 # Enable SPI
 sed -i 's/spi=off/spi=on/g' ${mount}/boot/config.txt
@@ -82,3 +77,5 @@ cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
 
 # Run the setup script inside the chroot
 chroot ${mount}  "/tmp/${script}"
+
+xz -z ${rpi_image} -c > ${rpi_image}.xz
