@@ -40,16 +40,27 @@ trap cleanup EXIT
 
 # Download archlinux arm only if we have not already done so
 [ ! -f "${rpi_tar}" ] && wget "${rpi_url}"
+
+# extract image
+[ ! -f "${rpi_image}" ] && 7z -aoa e "${rpi_tar}"
+
+# expand image size for resize2fs
 img_size=$(stat -c%s ${rpi_image})
 [ ${img_size} -eq 552599552 ] && dd if=/dev/zero bs=1M count=1024 >> ${rpi_image}
 
-# Install dietbian to the image
-[ ! -f "${rpi_image}" ] && 7z -aoa e "${rpi_tar}"
 losetup -o $((8192*512)) /dev/loop0 "${rpi_image}"
 losetup -o $((137216*512)) /dev/loop1 "${rpi_image}"
 
 mount /dev/loop1 "${mount}"
 mount /dev/loop0 "${mount}/boot"
+
+# debug
+df
+
+resize2fs /dev/loop1
+
+# debug
+df
 
 # Enable SPI
 sed -i 's/spi=off/spi=on/g' ${mount}/boot/config.txt
