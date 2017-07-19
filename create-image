@@ -46,7 +46,7 @@ trap cleanup EXIT
 
 # expand image size for resize2fs
 img_size=$(stat -c%s ${rpi_image})
-[ ${img_size} -eq 552599552 ] && dd if=/dev/zero bs=1M count=1024 >> ${rpi_image}
+[ ${img_size} -eq 552599552 ] && dd if=/dev/zero bs=1M count=2048 >> ${rpi_image}
 
 losetup -o $((8192*512)) /dev/loop0 "${rpi_image}"
 losetup -o $((137216*512)) /dev/loop1 "${rpi_image}"
