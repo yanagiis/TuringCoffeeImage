@@ -78,4 +78,4 @@ cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
 # Run the setup script inside the chroot
 chroot ${mount}  "/tmp/${script}"
 
-tar -czvf ${rpi_image}.tar.gz ${rpi_image}
+xz -z ${rpi_image} -c > ${rpi_image}.xz
