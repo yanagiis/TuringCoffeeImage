@@ -24,4 +24,4 @@ deploy:
   github_token: 5fbced7241746640f7cf52a395e25874fec01e1e
   file: DietPi_v150_RPi-armv6-(Jessie).img.xz
   on:
-    branch: master
+    branch: image
