@@ -84,11 +84,12 @@ mount -t proc none ${mount}/proc
 mount -t sysfs none ${mount}/sys
 mount -o bind /dev ${mount}/dev
 
-mv ${mount}/etc/resolv.conf ${mount}/etc/_resolv.conf
+mv ${mount}/etc/resolv.conf resolv.conf
 cp /etc/resolv.conf ${mount}/etc/resolv.conf
 cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
 
 # Run the setup script inside the chroot
 chroot ${mount}  "/tmp/${script}"
 
-xz -z ${rpi_image} -c > ${rpi_image}.xz
+# Recover resolv.conf
+mv resolv.conf ${mount}/etc/resolv.conf 

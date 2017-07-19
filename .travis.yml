@@ -16,6 +16,7 @@ script:
 - ar p qemu-user-static_2.8+dfsg-6_amd64.deb data.tar.xz | bsdtar xf -
 - sudo cp -rf ./usr/* /usr/
 - sudo bash ./create-image
+- xz -z "DietPi_v150_RPi-armv6-(Jessie).img" -c > TuringCoffee.img
 deploy:
   provider: releases
   skip_cleanup: true
