@@ -48,6 +48,18 @@ trap cleanup EXIT
 img_size=$(stat -c%s ${rpi_image})
 [ ${img_size} -eq 552599552 ] && dd if=/dev/zero bs=1M count=1024 >> ${rpi_image}
 
+(
+echo d # Delete partition 2
+echo 2 # 
+echo n # Create partition 2
+echo p # Primary partition
+echo 2 # Partition number
+echo 137216 # First sector (Accept default: 1)
+echo   # Last sector (Accept default: varies)
+echo N # Don't remove signature
+echo w # Write changes
+) | fdisk ${rpi_image}
+
 losetup -o $((8192*512)) /dev/loop0 "${rpi_image}"
 losetup -o $((137216*512)) /dev/loop1 "${rpi_image}"
 
