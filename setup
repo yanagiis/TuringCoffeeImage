@@ -11,8 +11,7 @@ node_url="https://nodejs.org/dist/v8.1.4/${node_tar}"
 
 # Install packages
 apt-get update
-apt-get uninstall -y dropbear
-apt-get install -y python-dev git zsh build-essential openssh-server sshfs vim
+apt-get install -y python-dev git zsh build-essential vim
 
 # Install Nodejs
 [ ! -d "${node_tar}" ] && wget "${node_url}"
