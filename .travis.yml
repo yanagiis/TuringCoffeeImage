@@ -26,3 +26,4 @@ deploy:
   file: TuringCoffee.img.xz
   on:
     repo: yanagiis/TuringCoffeeImage
+    tags: true
