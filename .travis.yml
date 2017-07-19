@@ -11,17 +11,15 @@ addons:
     - dosfstools
     - p7zip-full
     - bsdtar
-
 script:
-  - wget "http://ftp.debian.org/debian/pool/main/q/qemu/qemu-user-static_2.8+dfsg-6_amd64.deb"
-  - ar p qemu-user-static_2.8+dfsg-6_amd64.deb data.tar.xz | bsdtar xf -
-  - sudo cp -rf ./usr/* /usr/
-  - sudo bash ./create-image
-
+- wget "http://ftp.debian.org/debian/pool/main/q/qemu/qemu-user-static_2.8+dfsg-6_amd64.deb"
+- ar p qemu-user-static_2.8+dfsg-6_amd64.deb data.tar.xz | bsdtar xf -
+- sudo cp -rf ./usr/* /usr/
+- sudo bash ./create-image
 deploy:
   provider: releases
-  skip_cleanup: true
-  api_key: 5fbced7241746640f7cf52a395e25874fec01e1e
+  api_key:
+    secure: rasExYmf2oQKKce2Ik2S1NQBLQFso8zMbDj5RBLDqaJTm+dcBzHJaAJWVvqumIWt1s5EUkABGFZ7n/MshQz+H0+CBKVfxyKsyldrXoWmANUoivuPUoDX06UpbHbEkacZcUHIEtBpJHIYGVqj7TOrHw0uN7t9EbH4OIuwXxAZynobJ12rh/b88JGcSvcPHtJspZ7GE5AoXiAWB3yL5CxmcR+q4WBKqLj+QhSg2xkhS8pxZq1fWnCtbrS5UfZhGb/MG+vYdTo3iOQGYNsADvPoAWWtcdd1YEfmQ506CIHF2Ku4y2AhajHnHdupigKpnVxH65C42M4eeiTLIYb3Xc3Fk0AUPjOmFwUE6FXQvxS427xtRD0auR+dmL61nQMB61vLZguEFlU4I0nixDEsVUdHzev1/ETIibFOiBPklHPfszaOJ5RP2o+1bxfVzUHs4w6aGkXxdxnIqxzM318uVpHo6PKJO1iXrYAjSpGyb4epLohsh5XeH0AOnW7wPR4tKU/EtMOEnQ12SkmKBBfuFkjYZbvrg9XVWv3FUXrWY5c5wugTlWiEbgeCy7hxtOSUARMtbR0wCq0KKKLgCpaQmoBCnQ98ShQ7WCoK42fMhy6TZzzpeCQYGHgsinUUSfdp6X9/F71J1pY6ArUVMh1JRPIH+4ekmHuApd36aJC0Aed6ezA=
   file: DietPi_v150_RPi-armv6-(Jessie).img.xz
   on:
-    branch: master
+    repo: yanagiis/TuringCoffeeImage
