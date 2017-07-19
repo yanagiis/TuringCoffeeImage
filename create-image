@@ -56,7 +56,6 @@ echo p # Primary partition
 echo 2 # Partition number
 echo 137216 # First sector (Accept default: 1)
 echo   # Last sector (Accept default: varies)
-echo N # Don't remove signature
 echo w # Write changes
 ) | fdisk ${rpi_image}
 
