@@ -9,15 +9,53 @@ echo "deb http://ftp.yzu.edu.tw/Linux/raspbian/raspbian jessie main contrib non-
 node_tar="node-v8.1.4-linux-armv7l.tar.xz"
 node_url="https://nodejs.org/dist/v8.1.4/${node_tar}"
 
+install_debian_packages() {
+    # Install packages
+    apt-get update
+    apt-get install -y python-dev git zsh build-essential vim libnanomsg-dev
+}
+
+install_nodejs() {
+    # Install Nodejs
+    [ ! -f "${node_tar}" ] && wget "${node_url}"
+    tar -xvf ${node_tar} -C "/" --strip 1
+}
+
+remove_nodejs_tar() {
+    [ -f "${node_tar}" ] && rm "${node_tar}"
+}
+
+install_prezto() {
+    # Get prezto
+    git clone --recursive https://github.com/sorin-ionescu/prezto.git ~/.zprezto
+
+    # Backup zsh config if it exists
+    if [ -f ~/.zshrc ];
+       then
+           mv ~/.zshrc ~/.zshrc.backup
+    fi
+
+    # Create links to zsh config files
+    ln -s ~/.zprezto/runcoms/zlogin ~/.zlogin
+    ln -s ~/.zprezto/runcoms/zlogout ~/.zlogout
+    ln -s ~/.zprezto/runcoms/zpreztorc ~/.zpreztorc
+    ln -s ~/.zprezto/runcoms/zprofile ~/.zprofile
+    ln -s ~/.zprezto/runcoms/zshenv ~/.zshenv
+    ln -s ~/.zprezto/runcoms/zshrc ~/.zshrc
+
+    echo "alias l='ls -alh'" >> ~/.zshrc
+    sed -i "s/'sorin'/'skwp'/g"  ~/.zpreztorc
+}
+
+main() {
+    install_debian_packages
+    install_nodejs
+    install_prezto
+}
+
 cleanup() {
-    [[ -f "${node_tar}" ]] && rm "${node_tar}"
+    remove_nodejs_tar
 }
 trap cleanup EXIT
 
-# Install packages
-apt-get update
-apt-get install -y python-dev git zsh build-essential vim libnanomsg-dev
-
-# Install Nodejs
-[ ! -d "${node_tar}" ] && wget "${node_url}"
-tar -xvf ${node_tar} -C "/" --strip 1
+main
