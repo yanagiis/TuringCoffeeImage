@@ -9,6 +9,11 @@ echo "deb http://ftp.yzu.edu.tw/Linux/raspbian/raspbian jessie main contrib non-
 node_tar="node-v8.1.4-linux-armv7l.tar.xz"
 node_url="https://nodejs.org/dist/v8.1.4/${node_tar}"
 
+cleanup() {
+    [[ -f "${node_tar}" ]] && rm "${node_tar}"
+}
+trap cleanup EXIT
+
 # Install packages
 apt-get update
 apt-get install -y python-dev git zsh build-essential vim libnanomsg-dev

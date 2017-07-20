@@ -12,84 +12,113 @@ fi
 
 # Some useful constants
 mount="mnt" # Local directory to mount the image (automatically created/delete as needed)
-script="setup" # Local setup script to run inside the image
+script="setup-qemu" # Local setup script to run inside the image
 rpi_name="DietPi_RPi-armv6-(Jessie)"
 rpi_image="DietPi_v150_RPi-armv6-(Jessie).img"
 rpi_tar="${rpi_name}.7z"
 rpi_url="http://dietpi.com/downloads/images/${rpi_tar}"
 
+main() {
+    download_image
+    create_mount_point
+    resize_rootfs
+    mount_image
+    change_default_config
+    prepare_chroot
+    # Run the setup script inside the chroot
+    chroot ${mount}  "/tmp/${script}"
+    post_chroot
+}
+
 # Tasks to run when the shell exits for any reason, unmount the image and 
 # general cleanup
 cleanup() {
-    [[ -f "${mount}/tmp/${script}" ]] && rm "${mount}/tmp/${script}"
-    [[ -f "${mount}/etc/_resolv.conf" ]] && mv "${mount}/etc/_resolv.conf" "${mount}/etc/resolv.conf"
+    post_chroot
+    unmount_image
+    delete_mount_point
+}
+
+download_image() {
+    # Download dietpi only if we have not already done so
+    [ ! -f "${rpi_tar}" ] && wget "${rpi_url}"
+    # extract image
+    [ ! -f "${rpi_image}" ] && 7z -aoa e "${rpi_tar}"
+}
+
+create_mount_point() {
+    [ ! -d "${mount}" ] && mkdir -p "${mount}"
+}
+
+delete_mount_point() {
+    [ -d "${mount}" ] && rmdir "${mount}"
+}
+
+resize_rootfs() {
+    # expand image size for resize2fs
+    img_size=$(stat -c%s ${rpi_image})
+    [ ${img_size} -eq 552599552 ] && dd if=/dev/zero bs=1M count=1024 >> ${rpi_image}
+
+    (
+    echo d # Delete partition 2
+    echo 2 # 
+    echo n # Create partition 2
+    echo p # Primary partition
+    echo 2 # Partition number
+    echo 137216 # First sector (Accept default: 1)
+    echo   # Last sector (Accept default: varies)
+    echo w # Write changes
+    ) | fdisk ${rpi_image}
+}
+
+mount_image() {
+    losetup -o $((8192*512)) /dev/loop0 "${rpi_image}"
+    losetup -o $((137216*512)) /dev/loop1 "${rpi_image}"
+    mount /dev/loop1 "${mount}"
+    mount /dev/loop0 "${mount}/boot"
+    resize2fs /dev/loop1
+}
+
+unmount_image() {
     if [[ -d "${mount}" ]]; then
-        umount "${mount}/dev" || true
-        umount "${mount}/proc" || true
-        umount "${mount}/sys" || true
         umount "${mount}/boot" || true
         umount "${mount}" || true
-        rmdir "${mount}" || true
+        losetup -d /dev/loop0 || true
+        losetup -d /dev/loop1 || true
     fi
-    losetup -d /dev/loop0
-    losetup -d /dev/loop1
 }
+
+change_default_config() {
+    # Enable SPI
+    sed -i 's/spi=off/spi=on/g' ${mount}/boot/config.txt
+}
+
+pre_chroot() {
+    # Copy our installation script to the mount so it can be run in the chroot
+    install -Dm755 "${script}" "${mount}/tmp/${script}"
+
+    # Prepare the chroot
+    [ ! -d "${mount}/proc" ] && mkdir -p ${mount}/proc
+    [ ! -d "${mount}/sysfs" ] && mkdir -p ${mount}/sysfs
+    [ ! -d "${mount}/dev" ] && mkdir -p ${mount}/dev
+
+    mount -t proc none ${mount}/proc
+    mount -t sysfs none ${mount}/sys
+    mount -o bind /dev ${mount}/dev
+
+    mv ${mount}/etc/resolv.conf resolv.conf
+    cp /etc/resolv.conf ${mount}/etc/resolv.conf
+    cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
+}
+
+post_chroot() {
+    rm ${mount}/tmp/${script}
+    rm ${mount}/usr/bin/qemu-arm-static
+    mv resolv.conf ${mount}/etc/resolv.conf 
+
+    umount "${mount}/dev" || true
+    umount "${mount}/proc" || true
+    umount "${mount}/sys" || true
+}
+
 trap cleanup EXIT
-
-[ ! -d "${mount}" ] && mkdir -p "${mount}"
-
-# Download archlinux arm only if we have not already done so
-[ ! -f "${rpi_tar}" ] && wget "${rpi_url}"
-
-# extract image
-[ ! -f "${rpi_image}" ] && 7z -aoa e "${rpi_tar}"
-
-# expand image size for resize2fs
-img_size=$(stat -c%s ${rpi_image})
-[ ${img_size} -eq 552599552 ] && dd if=/dev/zero bs=1M count=1024 >> ${rpi_image}
-
-(
-echo d # Delete partition 2
-echo 2 # 
-echo n # Create partition 2
-echo p # Primary partition
-echo 2 # Partition number
-echo 137216 # First sector (Accept default: 1)
-echo   # Last sector (Accept default: varies)
-echo w # Write changes
-) | fdisk ${rpi_image}
-
-losetup -o $((8192*512)) /dev/loop0 "${rpi_image}"
-losetup -o $((137216*512)) /dev/loop1 "${rpi_image}"
-
-mount /dev/loop1 "${mount}"
-mount /dev/loop0 "${mount}/boot"
-
-fdisk -l ${rpi_image}
-resize2fs /dev/loop1
-fdisk -l ${rpi_image}
-
-# Enable SPI
-sed -i 's/spi=off/spi=on/g' ${mount}/boot/config.txt
-
-# Copy our installation script to the mount so it can be run in the chroot
-install -Dm755 "${script}" "${mount}/tmp/${script}"
-
-# Prepare the chroot
-[ ! -d "${mount}/proc" ] && mkdir -p ${mount}/proc
-[ ! -d "${mount}/sysfs" ] && mkdir -p ${mount}/sysfs
-[ ! -d "${mount}/dev" ] && mkdir -p ${mount}/dev
-
-mount -t proc none ${mount}/proc
-mount -t sysfs none ${mount}/sys
-mount -o bind /dev ${mount}/dev
-
-mv ${mount}/etc/resolv.conf resolv.conf
-cp /etc/resolv.conf ${mount}/etc/resolv.conf
-cp /usr/bin/qemu-arm-static ${mount}/usr/bin/
-
-# Run the setup script inside the chroot
-chroot ${mount}  "/tmp/${script}"
-
-# Recover resolv.conf
-mv resolv.conf ${mount}/etc/resolv.conf 
+main
