@@ -92,7 +92,7 @@ change_default_config() {
     sed -i 's/spi=off/spi=on/g' ${mount}/boot/config.txt
 }
 
-pre_chroot() {
+prepare_chroot() {
     # Copy our installation script to the mount so it can be run in the chroot
     install -Dm755 "${script}" "${mount}/tmp/${script}"
 
